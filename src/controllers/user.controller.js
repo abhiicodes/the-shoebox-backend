@@ -9,7 +9,8 @@ require("dotenv").config();
 const nodemailer = require("nodemailer");
 const otpGenerator = require("../utils/otp.util");
 const otpModel = require("../models/otp.model");
-const Cart = require("../models/cart.model")
+const Cart = require("../models/cart.model");
+const userMiddleware = require("../middlewares/user.middleware");
 router.get("", authMiddleware, async (req, res) => {
   try {
     const users = await User.find();
@@ -19,7 +20,7 @@ router.get("", authMiddleware, async (req, res) => {
   }
 });
 
-router.post("/signup", async (req, res) => {
+router.post("/signup",userMiddleware, async (req, res) => {
   try {
     let { email, password } = req.body;
     // console.log(email,password)
@@ -54,9 +55,10 @@ router.post("/signup", async (req, res) => {
         return console.log("email sent");
       });
 
-    res.send({ user, generatedOtp,cart });
+    return res.send({ message:"User created successfully", user_id:user._id });
   } catch (error) {
-    res.send(error.message);
+
+    res.status(500).send(error.message);
   }
 });
 
@@ -66,23 +68,24 @@ router.post("/login", async (req, res) => {
       email: req.body.email,
     });
     if (!user) {
-      return res.send("User does not exist or incorrect email");
+      return res.status(500).send("User does not exist or incorrect email");
     }
-    if (await argon2.verify(user.password, req.body.password)) {
+    if ( await argon2.verify(user.password, req.body.password)) {
       const token = jwt.sign({ email: user.email, _id:user._id }, process.env.JWT_SECRET_KEY);
       return res.send({ token });
     } else {
-      return res.send("Invalid email or password");
+      return res.status(500).send("Invalid email or password");
     }
   } catch (error) {
-    res.send(error.message);
+   return res.status(500).send(error.message);
   }
 });
 
-router.patch("/verify/:id", async (req, res) => {
+router.post("/verify/:id", async (req, res) => {
   try {
     const otp = await otpModel.findOne({ user_id: req.params.id });
-    if (req.body.otp == otp.otp) {
+    // console.log(req.params.id)
+    if ( req.body.otp == otp.otp) {
       const newOtp = await otpModel.findByIdAndUpdate(otp._id, { otp: null });
       return res.send("Verification successful");
     } else {
@@ -93,12 +96,16 @@ router.patch("/verify/:id", async (req, res) => {
   }
 });
 
-router.get("/forgotpassword/:id", async (req, res) => {
+router.get("/forgotpassword", async (req, res) => {
   try {
+    const {email} = req.query;
+
+const user = await User.findOne({email})
+
     const otp = otpGenerator();
     // console.log(otp)
     const generatedOtp = await OtpModel.findOneAndUpdate(
-      { user_id: req.params.id },
+      { user_id: user._id },
       { otp },
       { new: true }
     );
@@ -125,7 +132,7 @@ router.get("/forgotpassword/:id", async (req, res) => {
         return console.log("email sent");
       });
 
-    res.send({ generatedOtp });
+   return res.send({user_id:user._id});
   } catch (error) {
     res.send(error.message);
   }
@@ -133,10 +140,11 @@ router.get("/forgotpassword/:id", async (req, res) => {
 
 router.post("/updatepassword/:id", async (req, res) => {
     try {
+      console.log(req.params.id)
         const password = await argon2.hash(req.body.password);
       const user = await User.findByIdAndUpdate(req.params.id,{password});
       if (!user) {
-        return res.send("User does not exist or incorrect email");
+        return res.status(500).send("User does not exist or incorrect email");
       }
       res.send("password update successfull")
     } catch (error) {
