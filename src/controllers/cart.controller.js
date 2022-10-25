@@ -2,6 +2,7 @@ const express = require("express");
 
 const router = express.Router();
 const authMiddleware = require("../middlewares/auth.middleware");
+const cartMiddleware = require("../middlewares/cart.middleware");
 const categoryMiddleware = require("../middlewares/category.middleware");
 
 const Cart = require("../models/cart.model");
@@ -16,9 +17,9 @@ router.post(
   async (req, res) => {
     try {
       const cart = await Cart.findOne({ user_id: req.body.user_id });
-      console.log(cart,req.body)
+      // console.log(cart,req.body)
       cart.items = [...cart.items, req.body];
-      console.log(cart)
+      // console.log(cart)
       // console.log(cart, req.body)
 
       const updatedCart = await Cart.findByIdAndUpdate(cart._id, cart, {
@@ -108,9 +109,10 @@ router.patch(
   );
 
   router.post("/set",authMiddleware,
-  categoryMiddleware,async(req,res)=>{
+  categoryMiddleware,cartMiddleware,async(req,res)=>{
     try {
       const cart = await Cart.findOne({ user_id: req.body.user_id })
+      console.log(req.body.items)
       cart.items = req.body.items
       const updatedCart = await Cart.findByIdAndUpdate(cart._id, cart, {
         new: true,
