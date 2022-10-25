@@ -72,7 +72,7 @@ router.post("/login", async (req, res) => {
     }
     if ( await argon2.verify(user.password, req.body.password)) {
       const token = jwt.sign({ email: user.email, _id:user._id }, process.env.JWT_SECRET_KEY);
-      return res.send({ token });
+      return res.send({ token,name:user.first_name });
     } else {
       return res.status(500).send("Invalid email or password");
     }

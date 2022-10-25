@@ -107,4 +107,18 @@ router.patch(
     }
   );
 
+  router.post("/set",authMiddleware,
+  categoryMiddleware,async(req,res)=>{
+    try {
+      const cart = await Cart.findOne({ user_id: req.body.user_id })
+      cart.items = req.body.items
+      const updatedCart = await Cart.findByIdAndUpdate(cart._id, cart, {
+        new: true,
+      });
+     return res.send(updatedCart);
+    } catch (error) {
+      res.status(500).send(error.message)
+    }
+  } )
+
 module.exports = router;
