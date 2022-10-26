@@ -15,7 +15,7 @@ router.post(
   uploadMultiple("images"),
   async (req, res) => {
     try {
-      // console.log("req files", req.files)
+      //
       var imageUrlList = [];
 
       for (var i = 0; i < req.files.length; i++) {
@@ -24,7 +24,7 @@ router.post(
         // Upload the local image to Cloudinary
         // and get image url as response
         var result = await uploadToCloudinary(locaFilePath);
-        // console.log(result)
+        //
         imageUrlList.push(result.url);
       }
 
@@ -44,7 +44,7 @@ router.post(
 
 router.get("/mobiles", authMiddleware, async (req, res) => {
   try {
-    // console.log(req.query)
+    //
     const user_id = req.query.user;
     let mobile;
     if (!user_id) {
@@ -61,7 +61,7 @@ router.get("/mobiles", authMiddleware, async (req, res) => {
 
 router.get("/mobiles/:id", authMiddleware, async (req, res) => {
   try {
-    // console.log(req.query)
+    //
 
     const mobile = await Mobile.findById(req.params.id).populate({
       path: "user_id",
@@ -78,11 +78,11 @@ router.patch(
   categoryMiddleware,
   async (req, res) => {
     try {
-      // console.log(req.query)
+      //
 
       const mobile = await Mobile.findById(req.params.id).lean().exec();
       //   const user_id = mobile.user_id.split("(")
-      // console.log(mobile.user_id.toString())
+      //
       if (mobile.user_id.toString() !== req.body.user_id)
         return res.status(401).send("unauthorized");
       const updatedMobile = await Mobile.findByIdAndUpdate(
@@ -104,11 +104,11 @@ router.delete(
   categoryMiddleware,
   async (req, res) => {
     try {
-      // console.log(req.query)
+      //
 
       const mobile = await Mobile.findById(req.params.id).lean().exec();
       //   const user_id = mobile.user_id.split("(")
-      // console.log(mobile.user_id.toString())
+      //
       if (mobile.user_id.toString() !== req.body.user_id)
         return res.status(401).send("unauthorized");
       const updatedMobile = await Mobile.findByIdAndDelete(req.params.id);

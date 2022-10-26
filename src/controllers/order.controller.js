@@ -25,11 +25,30 @@ router.post("", async (req, res) => {
 
 router.patch("/cancel/:id", async (req, res) => {
   try {
-    const order = await Order.findByIdAndUpdate(
-      req.params.id,
-      { cancelled: true },
-      { new: true }
-    );
+    const order = await Order.findByIdAndDelete(req.params.id);
+    const orders = await Order.find({ user_id: req.body.user_id }).populate({
+      path: "items",
+      populate: {
+        path: "product_id",
+      },
+    });
+    res.send(orders);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
+router.get("", async (req, res) => {
+  try {
+    const order = await Order.find({ user_id: req.body.user_id }).populate({
+      path: "items",
+      populate: {
+        path: "product_id",
+      },
+    });
+
+    //
+
     res.send(order);
   } catch (error) {
     res.status(500).send(error.message);
