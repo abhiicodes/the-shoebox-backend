@@ -41,5 +41,6 @@ app.use("/api/payment", paymentRoutes);
 app.listen(PORT, async () => {
   try {
     connect();
+    console.log(`Connected to port ${PORT}`)
   } catch (error) {}
 });
